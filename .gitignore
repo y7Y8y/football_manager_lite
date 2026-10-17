@@ -1,0 +1,14 @@
+# Dépendances
+node_modules/
+
+# Build
+dist/
+*.tsbuildinfo
+
+# Couverture / caches
+coverage/
+.vite/
+
+# Fichiers locaux
+*.local
+.DS_Store
