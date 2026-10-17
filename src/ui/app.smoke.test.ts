@@ -4,9 +4,12 @@
  *
  * Il n'y a PAS de navigateur ni de GPU dans le sandbox : jsdom ne fournit pas
  * de contexte WebGL2. Ce test vérifie donc le chemin de repli, et surtout que
- * l'application démarre, monte ses deux vues et navigue entre elles sans
+ * l'application démarre, monte ses vues et navigue entre elles sans
  * lever d'exception. Le rendu 3D réel ne peut être validé que dans le
  * navigateur de l'utilisateur.
+ *
+ * Depuis la phase 1, l'ecran Effectif est la vue par defaut : c'est le
+ * critere de sortie de la phase 1 dans la doc 26.
  */
 
 import { beforeAll, describe, expect, it, vi } from 'vitest';
@@ -38,13 +41,21 @@ describe('démarrage de l’application', () => {
     await import('../main');
 
     const navButtons = document.querySelectorAll('.nav-btn');
-    expect(navButtons).toHaveLength(2);
-    expect(navButtons[0].textContent).toBe('Tableau de bord');
-    expect(navButtons[1].textContent).toBe('Match');
+    expect(navButtons).toHaveLength(3);
+    expect(navButtons[0].textContent).toBe('Effectif');
+    expect(navButtons[1].textContent).toBe('Tableau de bord');
+    expect(navButtons[2].textContent).toBe('Match');
+
+    // Vue par defaut : le club et son effectif (critere de la phase 1).
+    const club = document.querySelector('.club-view');
+    expect(club).not.toBeNull();
+    expect(club?.classList.contains('is-hidden')).toBe(false);
+    expect(document.querySelector('.club-name')?.textContent).toBeTruthy();
+    expect(document.querySelectorAll('tr.club-row').length).toBeGreaterThan(0);
 
     const dashboard = document.querySelector('#view-dashboard');
     expect(dashboard).not.toBeNull();
-    expect(dashboard?.classList.contains('is-hidden')).toBe(false);
+    expect(dashboard?.classList.contains('is-hidden')).toBe(true);
 
     // 4 cartes de mesures, avec des valeurs issues du store de mesures.
     const cards = document.querySelectorAll('#view-dashboard .card');
@@ -53,7 +64,7 @@ describe('démarrage de l’application', () => {
   });
 
   it('bascule sur la vue match et déclenche le repli 2D faute de WebGL2', async () => {
-    const matchButton = document.querySelectorAll<HTMLButtonElement>('.nav-btn')[1];
+    const matchButton = document.querySelectorAll<HTMLButtonElement>('.nav-btn')[2];
     matchButton.click();
 
     const matchView = document.querySelector('#view-match');
@@ -72,7 +83,7 @@ describe('démarrage de l’application', () => {
     expect(toolbarButtons).toHaveLength(4);
 
     // Retour au tableau de bord.
-    document.querySelectorAll<HTMLButtonElement>('.nav-btn')[0].click();
+    document.querySelectorAll<HTMLButtonElement>('.nav-btn')[1].click();
     expect(document.querySelector('#view-dashboard')?.classList.contains('is-hidden')).toBe(false);
     expect(document.querySelector('#view-match')?.classList.contains('is-hidden')).toBe(true);
   });

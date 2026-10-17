@@ -1,0 +1,714 @@
+/* ============================================================================
+   ÉCRAN « EFFECTIF » — charte graphique SPORT (proposition A retenue)
+
+   Règles appliquées ici, et pourquoi :
+
+   1. Fond clair mais pas blanc à outrance : la base est le papier #F4F1EA,
+      les surfaces sont #EDE9DF et #F7F4EC. Aucun #FFF pur.
+   2. Le grenat #7C2D3A ne sert qu'à trois choses : la sélection, l'action
+      principale, et l'information importante (capacité d'un joueur).
+   3. Tableaux denses et pratiques : ligne de 26 px, chiffres alignés,
+      en-tête collant pour rester visible au défilement.
+   4. Sans-serif partout. Barlow pour le texte, Barlow Condensed pour les
+      données sportives (postes, âges, capacités, valeurs).
+   5. Jamais de couleur seule : chaque badge porte son texte.
+   6. Aucune réduction automatique de police : on masque des colonnes
+      secondaires quand la largeur manque (voir les media queries).
+   ========================================================================= */
+
+/* -------------------------------------------------------------- jetons */
+
+.club-view {
+  --papier: #f4f1ea;
+  --surface: #ede9df;
+  --surface-2: #f7f4ec;
+  --selection: #f0e4e4;
+  --encre: #17161c;
+  --encre-2: #4a4854;
+  --encre-3: #7e7c88;
+  --filet: #d8d2c2;
+  --filet-section: #847e6e;
+  --grenat: #7c2d3a;
+  --vert: #1c7048;
+  --rouge: #b8333b;
+  --orange: #c25e1e;
+  --badge-vert: #e4efe8;
+  --badge-jaune: #fbf0d2;
+  --badge-orange: #fbe8da;
+  --badge-rouge: #f7e2e3;
+  --piste: #e3ded0;
+
+  position: relative;
+  box-sizing: border-box;
+  min-height: 100%;
+  padding: 20px 24px 28px;
+  background: var(--papier);
+  color: var(--encre);
+  font-family: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.35;
+  color-scheme: light;
+}
+
+.club-view *,
+.club-view *::before,
+.club-view *::after {
+  box-sizing: border-box;
+}
+
+/* ----------------------------------------------------------------- tête */
+
+.club-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--filet-section);
+}
+
+.club-id {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Écu : deux bandes de couleur du club, dessinées en CSS — aucun asset. */
+.club-crest {
+  display: grid;
+  flex: none;
+  overflow: hidden;
+  width: 38px;
+  height: 42px;
+  border: 1px solid var(--filet-section);
+  border-radius: 3px 3px 14px 14px;
+  grid-template-rows: 1fr 1fr;
+}
+
+.club-crest span {
+  display: block;
+}
+
+.club-crest span:last-child {
+  border-top: 1px solid rgba(23, 22, 28, 0.28);
+}
+
+.club-names {
+  min-width: 0;
+}
+
+.club-name {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.club-sub {
+  margin: 2px 0 0;
+  color: var(--encre-2);
+  font-size: 12.5px;
+}
+
+.club-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 0;
+}
+
+.club-meta div {
+  padding: 0 14px;
+  border-left: 1px solid var(--filet);
+}
+
+.club-meta div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.club-meta dt {
+  color: var(--encre-3);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.club-meta dd {
+  margin: 1px 0 0;
+  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------- commandes */
+
+.club-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0 14px;
+}
+
+.club-btn {
+  padding: 6px 13px;
+  border: 1px solid var(--grenat);
+  border-radius: 3px;
+  background: var(--grenat);
+  color: #fdfcfa;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.club-btn:hover {
+  background: #6b2431;
+}
+
+.club-btn:focus-visible,
+.club-chip:focus-visible,
+.club-search:focus-visible {
+  outline: 2px solid var(--grenat);
+  outline-offset: 1px;
+}
+
+.club-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border: 1px solid var(--filet);
+  border-radius: 3px;
+  background: var(--surface-2);
+}
+
+.club-chip {
+  padding: 5px 11px;
+  border: 0;
+  border-left: 1px solid var(--filet);
+  background: transparent;
+  color: var(--encre-2);
+  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.club-chip:first-child {
+  border-left: 0;
+}
+
+.club-chip[aria-pressed='true'] {
+  background: var(--selection);
+  color: var(--grenat);
+  box-shadow: inset 0 0 0 1px var(--grenat);
+}
+
+.club-chip .chip-count {
+  margin-left: 5px;
+  color: var(--encre-3);
+  font-weight: 500;
+}
+
+.club-chip[aria-pressed='true'] .chip-count {
+  color: var(--grenat);
+}
+
+.club-search {
+  width: 168px;
+  margin-left: auto;
+  padding: 5px 9px;
+  border: 1px solid var(--filet);
+  border-radius: 3px;
+  background: var(--surface-2);
+  color: var(--encre);
+  font-family: inherit;
+  font-size: 12.5px;
+}
+
+.club-search::placeholder {
+  color: var(--encre-3);
+}
+
+/* --------------------------------------------------------------- synthèse */
+
+.club-summary {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+  border-top: 1px solid var(--filet);
+  border-bottom: 1px solid var(--filet);
+  background: var(--surface);
+}
+
+.club-summary div {
+  padding: 7px 16px 7px 0;
+  margin-right: 16px;
+  border-right: 1px solid var(--filet);
+}
+
+.club-summary div:last-child {
+  border-right: 0;
+}
+
+.club-summary dt {
+  color: var(--encre-2);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.club-summary dd {
+  margin: 1px 0 0;
+  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.club-summary dd small {
+  color: var(--encre-3);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ------------------------------------------------------- table + tiroir */
+
+.club-layout {
+  display: grid;
+  align-items: start;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.club-layout.is-open {
+  grid-template-columns: minmax(0, 1fr) 336px;
+}
+
+.club-table-wrap {
+  overflow: hidden;
+  border: 1px solid var(--filet);
+  border-radius: 3px;
+  background: var(--surface-2);
+}
+
+.club-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.club-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 0;
+  border-bottom: 1px solid var(--filet-section);
+  background: var(--surface);
+  color: var(--encre-2);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: right;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.club-table thead th.col-name,
+.club-table thead th.col-post {
+  text-align: left;
+}
+
+.club-sort {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.club-sort:hover {
+  color: var(--encre);
+  background: var(--papier);
+}
+
+.club-sort:focus-visible {
+  outline: 2px solid var(--grenat);
+  outline-offset: -2px;
+}
+
+.club-sort .sort-mark {
+  display: inline-block;
+  width: 9px;
+  color: var(--grenat);
+  font-size: 10px;
+}
+
+.club-table tbody td {
+  height: 26px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--filet);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.club-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.club-table tbody td.col-name {
+  position: relative;
+  text-align: left;
+}
+
+.club-table tbody td.col-post {
+  text-align: left;
+}
+
+.club-num {
+  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.col-name .club-num {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.col-post .club-post {
+  display: inline-block;
+  min-width: 34px;
+  padding: 1px 5px;
+  border: 1px solid var(--filet);
+  border-radius: 2px;
+  background: var(--papier);
+  color: var(--encre-2);
+  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+.club-row {
+  cursor: pointer;
+}
+
+.club-row:hover {
+  background: var(--papier);
+}
+
+.club-row.is-selected {
+  background: var(--selection);
+}
+
+.club-row.is-selected td {
+  box-shadow: inset 0 0 0 0 var(--grenat);
+}
+
+/* Le liseré grenat marque la sélection ; le fond seul ne suffit pas. */
+.club-row.is-selected td:first-child {
+  box-shadow: inset 3px 0 0 0 var(--grenat);
+}
+
+.club-row.is-injured .col-name .club-name-txt {
+  color: var(--encre-2);
+}
+
+/* Ligne de groupe : localisable d'un coup d'œil. */
+.club-group td {
+  height: 24px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--filet-section);
+  background: var(--surface);
+  color: var(--encre-2);
+  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.club-group .group-count {
+  margin-left: 6px;
+  color: var(--encre-3);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.club-empty td {
+  height: 40px;
+  color: var(--encre-2);
+  text-align: center;
+}
+
+/* Légende de tableau : présente pour les lecteurs d'écran, invisible à l'œil.
+   La disparition de colonnes ne doit jamais faire perdre le sens du tableau. */
+.club-sr {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------- badges */
+
+.club-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid;
+  border-radius: 2px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* Chaque badge porte son texte : la couleur ne transporte jamais seule
+   l'information. */
+.badge-ok {
+  border-color: transparent;
+  background: transparent;
+  color: var(--encre-2);
+}
+
+.badge-warn {
+  border-color: #d9b463;
+  background: var(--badge-jaune);
+  color: #6d5310;
+}
+
+.badge-bad {
+  border-color: #d09a9c;
+  background: var(--badge-rouge);
+  color: #8d2229;
+}
+
+.badge-out {
+  border-color: #d09a9c;
+  background: var(--badge-rouge);
+  color: #8d2229;
+}
+
+.badge-good {
+  border-color: #9dc4ac;
+  background: var(--badge-vert);
+  color: #145634;
+}
+
+.badge-info {
+  border-color: #b9b1d4;
+  background: #ece8f6;
+  color: #453a6b;
+}
+
+/* ---------------------------------------------------------------- tiroir */
+
+.club-drawer {
+  position: sticky;
+  top: 12px;
+  overflow: hidden;
+  border: 1px solid var(--filet-section);
+  border-radius: 3px;
+  background: var(--surface-2);
+}
+
+.club-drawer-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 12px 9px;
+  border-bottom: 1px solid var(--filet-section);
+  background: var(--surface);
+}
+
+.club-drawer-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.club-drawer-role {
+  margin: 2px 0 0;
+  color: var(--encre-2);
+  font-size: 12px;
+}
+
+.club-close {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--filet);
+  border-radius: 2px;
+  background: var(--papier);
+  color: var(--encre-2);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.club-close:hover {
+  border-color: var(--grenat);
+  color: var(--grenat);
+}
+
+.club-close:focus-visible {
+  outline: 2px solid var(--grenat);
+  outline-offset: 1px;
+}
+
+.club-drawer-body {
+  padding: 11px 12px 14px;
+}
+
+.club-attr {
+  margin: 0 0 11px;
+}
+
+.club-attr:last-child {
+  margin-bottom: 0;
+}
+
+.club-attr-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.club-attr-row dt {
+  color: var(--encre-2);
+  font-size: 12px;
+}
+
+.club-attr-row dd {
+  margin: 0;
+  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.club-bar {
+  overflow: hidden;
+  height: 6px;
+  border: 1px solid var(--filet);
+  border-radius: 3px;
+  background: var(--piste);
+}
+
+.club-bar i {
+  display: block;
+  height: 100%;
+  background: var(--encre-2);
+}
+
+.club-bar.is-key i {
+  background: var(--grenat);
+}
+
+.club-facts {
+  display: grid;
+  margin: 0;
+  padding-top: 11px;
+  border-top: 1px solid var(--filet);
+  gap: 0 12px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.club-facts div {
+  padding: 5px 0;
+  border-bottom: 1px solid var(--filet);
+}
+
+.club-facts dt {
+  color: var(--encre-3);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.club-facts dd {
+  margin: 1px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.club-drawer-note {
+  margin: 11px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--filet);
+  color: var(--encre-2);
+  font-size: 12px;
+}
+
+.club-drawer-note strong {
+  color: var(--encre);
+}
+
+/* ---------------------------------------------------- adaptation, pas zoom */
+
+/* Sous 1400 px : la colonne Statut disparaît (elle est dans le tiroir).
+   Sous 1240 px : la fin de contrat aussi. La police ne bouge jamais. */
+@media (max-width: 1400px) {
+  .club-view .col-status {
+    display: none;
+  }
+}
+
+@media (max-width: 1240px) {
+  .club-view .col-end {
+    display: none;
+  }
+
+  .club-layout.is-open {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+}
+
+@media (max-width: 1080px) {
+  .club-view .col-pa {
+    display: none;
+  }
+
+  .club-view {
+    padding: 16px 14px 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .club-view * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
