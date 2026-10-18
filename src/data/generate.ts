@@ -345,7 +345,10 @@ export function generateWorld(options: GenerateOptions): World {
     schemaVersion: SCHEMA_VERSION,
     seed,
     tick: 0,
-    date: startDate,
+    // Le monde commence la veille du premier match : le système Horloge
+    // avance la date AVANT que le calendrier ne regarde (ordre de la doc 48),
+    // donc le premier tick doit tomber sur la première journée.
+    date: addDays(startDate, -1),
     countries: [country],
     competitions: [competition],
     seasons: [season],

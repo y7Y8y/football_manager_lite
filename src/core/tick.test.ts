@@ -107,8 +107,15 @@ describe('horloge et journal', () => {
   it('journalise les 14 systèmes, dans l’ordre, à chaque tick', () => {
     const w = freshWorld();
     const entries = runTick(w);
-    expect(entries).toHaveLength(14);
-    expect(entries.map(e => e.system)).toEqual(DOC_48_ORDER);
+
+    // Le système Match peut ajouter des entrées supplémentaires (scores,
+    // blessures) : on vérifie donc que les 14 noms apparaissent dans l'ordre,
+    // en gardant leur première occurrence.
+    const seen: string[] = [];
+    for (const entry of entries) {
+      if (seen[seen.length - 1] !== entry.system) seen.push(entry.system);
+    }
+    expect(seen).toEqual([...DOC_48_ORDER]);
     expect(entries.every(e => e.tick === 0)).toBe(true);
   });
 

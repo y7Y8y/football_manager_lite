@@ -119,7 +119,7 @@ export interface Staff {
 
 /* -------------------------------------------------- compétitions et matchs */
 
-export type FixtureStatus = 'scheduled' | 'played';
+export type FixtureStatus = 'scheduled' | 'today' | 'played';
 
 export interface Fixture {
   id: number;
@@ -133,10 +133,27 @@ export interface Fixture {
   awayGoals: number;
 }
 
+/**
+ * Taxonomie de la doc 14, reprise à l'identique. Un événement est de la
+ * donnée pure : aucune logique d'affichage ne doit s'y glisser.
+ */
 export type MatchEventType =
-  | 'kickoff' | 'goal' | 'own_goal' | 'penalty_scored' | 'penalty_missed'
-  | 'yellow' | 'red' | 'substitution' | 'injury' | 'halftime' | 'fulltime'
-  | 'chance' | 'save';
+  // Match
+  | 'kickoff' | 'half_time' | 'full_time' | 'extra_time_start' | 'shootout_start'
+  // Score
+  | 'goal' | 'own_goal' | 'assist' | 'penalty_goal' | 'goal_disallowed'
+  // Discipline
+  | 'yellow_card' | 'second_yellow' | 'red_card' | 'foul' | 'dive'
+  // Jeu
+  | 'pass' | 'shot' | 'shot_on_target' | 'save' | 'tackle' | 'interception' | 'clearance'
+  // Arrêts de jeu
+  | 'corner' | 'free_kick' | 'penalty' | 'throw_in' | 'goal_kick' | 'offside'
+  // Effectif
+  | 'substitution' | 'injury' | 'return_from_injury'
+  // Temps
+  | 'added_time' | 'stoppage'
+  // Divers
+  | 'var_check' | 'weather_change' | 'pitch_invasion';
 
 /**
  * Immuable une fois écrit. `metadata` porte les champs variables sans

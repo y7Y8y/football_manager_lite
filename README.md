@@ -9,7 +9,7 @@ joueurs et calendrier sont **générés** à partir d'une graine.
 |---|---|---|---|
 | 0 — Cadrage | moteur web choisi, périmètre, schéma de données | dépôt qui démarre | fait |
 | 1 — Données | générateur fictif, staff, calendrier aller-retour, sauvegarde | **afficher un club et son effectif** | fait |
-| 2 — Simulation texte | match tick par tick, classement calculé | simuler une saison sans UI | à faire |
+| 2 — Simulation texte | match tick par tick, classement calculé | simuler une saison sans UI | fait |
 | 3 — Interface | club, effectif, tactique, calendrier, classement, transferts | jouer une saison via l'UI | à faire |
 | 4 — Match 2D | terrain, 22 points, ballon | comprendre un match en 2D | à faire |
 | 5 — Match 3D | terrain 3D, personnages, caméra TV | 60 fps sur machine moyenne | à faire |
@@ -36,6 +36,9 @@ src/
   core/       simulation, indépendante du rendu
     rng.ts          mulberry32 + splitmix32
     tick.ts         les 14 systèmes, dans l'ordre de la doc 48
+    matchSim.ts     simulation d'un match, sans rendu
+    squad.ts        sélection des 11 et évaluation de la force
+    standings.ts    classement calculé depuis les matchs
     runtime.ts      pas de temps fixe 60 Hz
     pitch.ts        positions tactiques 2D
   ui/         écrans
@@ -56,6 +59,42 @@ src/
 - **Le classement n'est jamais stocké** : il se calcule depuis les matchs.
 - **Un tick = un jour.** 14 systèmes tournent dans un ordre fixe ; ceux qui ne
   sont pas encore implémentés sont marqués réservés et datés par jalon.
+- **Le classement n'est jamais stocké** : `computeStandings` le recalcule
+  depuis les matchs, à chaque fin de journée.
+
+## Simulation de match
+
+Le modèle simule à la **minute**, et chaque minute porte des phases de jeu.
+Une phase = une attaque : progression par les passes, puis conclusion (tir,
+arrêt, but, coup de pied arrêté, faute).
+
+Pourquoi pas le tick spatial de la doc 48 : ce modèle est juste pour UN match
+regardé, mais il n'explique pas lisiblement pourquoi une équipe faible perd
+contre une équipe forte, et il coûte de l'ordre de 160 000 pas par match.
+Pour 240 matchs de championnat, on ne peut pas se le permettre. La doc 42
+recommande d'ailleurs « utility AI + state machine » pour un MVP.
+
+Les statistiques se calculent **à partir des événements**, jamais en parallèle
+(doc 40). Un événement est de la donnée pure, sans logique d'affichage
+(doc 14).
+
+### Ordres de grandeur mesurés
+
+Sur une saison complète (240 matchs, 16 clubs), graine 20261017 :
+
+| Mesure | Valeur | Référence championnat |
+|---|---|---|
+| Buts par match | 2,94 | 2,4 – 3,0 |
+| Victoires à domicile | 47 % | ~46 % |
+| Matchs nuls | 20 % | 18 – 30 % |
+| Jaunes par match | 3,95 | ~4 |
+| Rouges par match | 0,14 | ~0,1 |
+| Blessures par match | 0,22 | ~0,2 |
+| Temps de calcul | 0,34 s | budget doc 48 : 4 ms/match |
+
+Ces chiffres ne sont pas une reproduction d'un championnat réel : ce sont des
+garde-fous. Les tests de `season.test.ts` échouent si le modèle dérive hors de
+ces bandes.
 
 ## Sauvegarde
 

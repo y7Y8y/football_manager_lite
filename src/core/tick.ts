@@ -18,8 +18,10 @@
  * système 9 et arrive avec M2.
  */
 
-import type { World, WorldLogEntry } from '../data/types';
+import type { Injury, World, WorldLogEntry } from '../data/types';
 import { addDays } from '../data/generate';
+import { simulateMatch } from './matchSim';
+import { computeStandings } from './standings';
 
 export interface TickContext {
   /** Générateur pseudo-aléatoire déterministe, propre au tick courant. */
@@ -50,7 +52,7 @@ const calendar: TickSystem = world => {
   // Les matchs du jour sont signalés au système 9. On ne fait que repérer.
   for (const fixture of world.fixtures) {
     if (fixture.date === world.date && fixture.status === 'scheduled') {
-      fixture.status = 'scheduled'; // réservé : M2 joue le match ici
+      fixture.status = 'today';
     }
   }
 };
@@ -96,12 +98,108 @@ const preparation: TickSystem = () => {
   // Réservé M3 : compositions et convocations.
 };
 
-const match: TickSystem = () => {
-  // Réservé M2 : simulation des matchs du jour, événements, score.
+/**
+ * Systeme 9 - Match. Joue les matchs du jour et verse les evenements, les
+ * statistiques et les blessures dans le monde.
+ *
+ * Budget doc 48 : 4 ms par match. Le modele a la minute tient largement
+ * dedans, donc une journee entiere aussi.
+ */
+const match: TickSystem = world => {
+  const today = world.fixtures.filter(f => f.status === 'today');
+  if (today.length === 0) return;
+
+  // Les evenements sont verses dans l'ordre du calendrier : l'identifiant
+  // attribue a un match ne depend que de sa place dans la saison.
+  for (const fixture of today) {
+    const result = simulateMatch({ world, fixture, firstEventId: nextEventId(world) });
+
+    world.matchEvents.push(...result.events);
+    world.matchStats.push(...result.stats);
+
+    fixture.status = 'played';
+    fixture.homeGoals = result.homeGoals;
+    fixture.awayGoals = result.awayGoals;
+
+    for (const injury of result.injuries) {
+      const created: Injury = {
+        id: nextInjuryId(world),
+        playerId: injury.playerId,
+        type: injury.type,
+        severity: injury.severity,
+        startDate: world.date,
+        expectedReturn: addDays(world.date, injury.days),
+        actualReturn: null,
+      };
+      world.injuries.push(created);
+      world.log.push({
+        tick: world.tick,
+        date: world.date,
+        system: 'Match',
+        message: `blessure : ${created.type} (${created.severity}), joueur ${created.playerId}`,
+      });
+    }
+
+    const home = world.clubs.find(c => c.id === result.homeClubId);
+    const away = world.clubs.find(c => c.id === result.awayClubId);
+    world.log.push({
+      tick: world.tick,
+      date: world.date,
+      system: 'Match',
+      message:
+        `${home?.shortName ?? result.homeClubId} ${result.homeGoals} - ` +
+        `${result.awayGoals} ${away?.shortName ?? result.awayClubId}`,
+    });
+  }
+
+  // Le resultat fait bouger le moral tout de suite, pas au tick suivant.
+  applyMoraleFromResults(world, today);
 };
 
-const stats: TickSystem = () => {
-  // Réservé M2 : agrégation des statistiques de match.
+/** Prochain identifiant d'événement libre. */
+function nextEventId(world: World): number {
+  let max = 0;
+  for (const event of world.matchEvents) if (event.id > max) max = event.id;
+  return max + 1;
+}
+
+/** Prochain identifiant de blessure libre. */
+function nextInjuryId(world: World): number {
+  let max = 0;
+  for (const injury of world.injuries) if (injury.id > max) max = injury.id;
+  return max + 1;
+}
+
+/**
+ * Le resultat d'un match fait bouger le moral. L'ampleur depend de l'ecart au
+ * score, pas du hasard : une victoire 4-0 vaut plus qu'un 1-0.
+ */
+function applyMoraleFromResults(world: World, fixtures: World['fixtures']): void {
+  for (const fixture of fixtures) {
+    const margin = Math.abs(fixture.homeGoals - fixture.awayGoals);
+    const swing = 2 + Math.min(6, margin);
+
+    for (const player of world.players) {
+      if (player.clubId === fixture.homeClubId) {
+        player.morale += fixture.homeGoals > fixture.awayGoals ? swing : -swing;
+      } else if (player.clubId === fixture.awayClubId) {
+        player.morale += fixture.awayGoals > fixture.homeGoals ? swing : -swing;
+      } else {
+        continue;
+      }
+      player.morale = Math.max(0, Math.min(100, player.morale));
+    }
+  }
+}
+
+/**
+ * Systeme 10 - Statistiques. Le classement n'est jamais stocke (doc 25) :
+ * on le recalcule depuis les matchs a chaque fin de journee. C'est une
+ * fonction pure, donc peu couteuse, et cela garantit qu'aucune divergence ne
+ * peut s'installer entre le classement affiche et les matchs joues.
+ */
+const stats: TickSystem = world => {
+  computeStandings(world);
 };
 
 const press: TickSystem = () => {
@@ -109,8 +207,9 @@ const press: TickSystem = () => {
 };
 
 const morale: TickSystem = (world, ctx) => {
-  // Dérive lente du moral, bornée à [0, 100]. Les résultats de match (M2)
-  // viendront la ponctuer de mouvements plus nets.
+  // Bruit de fond quotidien du moral, borne à [0, 100]. Les résultats de match (M2)
+  // a [0, 100]. Les resultats de match sont deja appliques par le systeme 9,
+  // avec une ampleur proportionnelle a l'ecart au score.
   for (const player of world.players) {
     const drift = Math.floor(ctx.rng() * 5) - 2; // -2..+2
     player.morale = Math.max(0, Math.min(100, player.morale + drift));
@@ -136,15 +235,15 @@ const save: TickSystem = () => {
 
 export const TICK_ORDER: readonly SystemSpec[] = [
   { name: 'Horloge',        milestone: 1, run: clock,      reserved: false },
-  { name: 'Calendrier',     milestone: 1, run: calendar,   reserved: true  },
+  { name: 'Calendrier',     milestone: 1, run: calendar,   reserved: false  },
   { name: 'IA des clubs',   milestone: 3, run: clubAi,     reserved: true  },
   { name: 'Contrats',       milestone: 1, run: contracts,  reserved: true  },
   { name: 'Entraînement',   milestone: 3, run: training,   reserved: true  },
   { name: 'Médical',        milestone: 1, run: medical,    reserved: false },
   { name: 'Tactique',       milestone: 3, run: tactics,    reserved: true  },
   { name: 'Préparation',    milestone: 3, run: preparation,reserved: true  },
-  { name: 'Match',          milestone: 2, run: match,      reserved: true  },
-  { name: 'Statistiques',   milestone: 2, run: stats,      reserved: true  },
+  { name: 'Match',          milestone: 2, run: match,      reserved: false  },
+  { name: 'Statistiques',   milestone: 2, run: stats,      reserved: false  },
   { name: 'Presse',         milestone: 6, run: press,      reserved: true  },
   { name: 'Moral',          milestone: 1, run: morale,     reserved: false },
   { name: 'Finances',       milestone: 1, run: finances,   reserved: false },
